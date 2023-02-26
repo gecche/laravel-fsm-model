@@ -35,8 +35,8 @@ class FSMServiceProvider extends ServiceProvider
 
         $this->registerCommands();
         $this->publishes([
-            __DIR__.'../config/fsm.php' => config_path('fsm.php'),
-            __DIR__.'../App/Listeners/HandleStatusTransition.php' => app_path('Listeners/HandleStatusTransition.php'),
+            __DIR__.'/../config/fsm.php' => config_path('fsm.php'),
+            __DIR__.'/../App/Listeners/HandleStatusTransition.php' => app_path('Listeners/HandleStatusTransition.php'),
         ]);
 
     }
