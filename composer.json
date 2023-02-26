@@ -1,0 +1,30 @@
+{
+    "name": "gecche/laravel-fsm-model",
+    "description": "Use eloquent models as Finite State Machines",
+    "keywords": ["laravel", "eloquent", "transitions", "states"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Giacomo Terreni",
+            "email": "giacomo.terreni@gmail.com"
+        }
+    ],
+    "require": {
+        "laravel/framework": "^9.0|^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Gecche\\FSM\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Gecche\\FSM\\FSMServiceProvider"
+            ],
+            "aliases": {
+                "FSM": "Gecche\\FSM\\Facades\\FSM"
+            }
+        }
+    }
+}
