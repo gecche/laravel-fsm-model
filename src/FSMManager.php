@@ -2,11 +2,10 @@
 
 namespace Gecche\FSM;
 
-use Gecche\Breeze\Breeze;
-use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Model;
 
 class FSMManager
 {
@@ -16,10 +15,6 @@ class FSMManager
     protected $fsms = [];
 
     /**
-     * FormList constructor.
-     * @param array $input
-     * @param Breeze $model
-     * @param array $params
      */
     public function __construct($fsmConfig)
     {

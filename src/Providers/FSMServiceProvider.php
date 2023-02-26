@@ -3,6 +3,7 @@
 namespace Gecche\FSM\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Gecche\FSM\FSMManager;
 
 class FSMServiceProvider extends ServiceProvider
 {

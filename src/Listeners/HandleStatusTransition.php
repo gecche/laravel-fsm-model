@@ -2,6 +2,7 @@
 
 namespace Gecche\FSM\Listeners;
 
+use Illuminate\Support\Str;
 use Gecche\FSM\Events\StatusTransitionDone;
 
 class HandleStatusTransition

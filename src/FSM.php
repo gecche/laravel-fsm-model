@@ -1,9 +1,8 @@
 <?php namespace Gecche\FSM;
 
-use App\Models\Orderstatus;
 use Gecche\FSM\Contracts\FSMInterface;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 
 class FSM implements FSMInterface
