@@ -81,6 +81,16 @@ trait FSMTrait
         return $this->makeTransition($statusCode, $statusData, true, $params);
     }
 
+    public function startFSM($save = false, $statusData = [], $params = [])
+    {
+        return $this->makeTransition($this->fsm->getRootState(), $statusData, $save, $params);
+    }
+
+    public function startFSMAndSave($statusData = [], $params = [])
+    {
+        return $this->startFSM(true, $params);
+    }
+
     protected function setStatus($prevStatusCode, $statusCode, $statusData = [], $save = false, $params = [])
     {
 
@@ -130,7 +140,7 @@ trait FSMTrait
 
     protected function fireMakeTransitionEvent($prevStatusCode, $statusCode, $statusData, $saved, $params)
     {
-        event(new StatusTransitionDone($this,$prevStatusCode, $statusCode, $statusData, $saved, $params));
+        event(new StatusTransitionDone($this, $prevStatusCode, $statusCode, $statusData, $saved, $params));
     }
 
     protected function logStatus($prevStatusCode, $statusCode, $statusData, $saved, $params = [])
