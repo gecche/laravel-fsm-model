@@ -115,8 +115,8 @@ class FSM implements FSMInterface
     }
     /**
      * controlla che il passaggio di stato sia lecito.
-     * @param unknown_type $startCode
-     * @param unknown_type $endCode
+     * @param string $startCode
+     * @param string $endCode
      * @return bool
      */
     public function checkTransition($startCode, $endCode)

@@ -1,6 +1,7 @@
 <?php namespace Gecche\FSM;
 
 use Gecche\FSM\Contracts\FSMInterface;
+use Gecche\FSM\Events\StatusTransitionDone;
 use Illuminate\Support\Facades\Config;
 
 use App\Models\Orderstatus;
@@ -11,8 +12,6 @@ use Illuminate\Support\Facades\Log;
 trait FSMTrait
 {
 
-
-
     public FSMInterface $fsm;
 
     public static function bootSearchableTrait()
@@ -21,88 +20,124 @@ trait FSMTrait
 
             $item->fsm = FSM::getFSM($item);
             // Index the item
+
         });
 
     }
 
-    public function getFSMStates() {
-        return $this->fsm->getStates();
-    }
-
-
     /**
+     * Get the casts array.
+     *
      * @return array
      */
-    public function getFSMStateInfo(string $stateCode, $info = null) {
-        return $this->fsm->getStateInfo($stateCode, $info);
+    public function getCasts()
+    {
+        $this->casts[$this->getStatusHistoryFieldname()] = 'array';
+        return parent::getCasts();
     }
 
-    /**
-     * @return array
-     */
-    public function getFSMStatesCodes() {
-        return $this->fsm->getStatesCodes();
+    public function getFSM()
+    {
+        return $this->fsm;
     }
 
-    /**
-     * Ritorna gli states successivi possibili a partire da uno stato $key
-     * @param string $code
-     * @return array(key,descrizione)
-     */
-    public function getFSMNextStatesFromCode(string $code) {
-        return $this->fsm->getNextStatesFromCode($code);
+    public function getStatusFieldname()
+    {
+        return 'status';
     }
 
-    /**
-     * Ritorna gli states successivi possibili a partire da un array di states $codearray
-     * @param array $keyarray (i codici degli states di partenza)
-     * @return array(array(key,descrizione))
-     */
-    public function getFSMNextStatesFromCodes(array $codes = []) {
-        return $this->fsm->getNextStatesFromCodes($codes);
+    public function getStatusHistoryFieldname()
+    {
+        return 'status_history';
     }
 
-    public function getFSMRootState() {
-        return $this->fsm->getRootState();
+    public function makeTransition($statusCode = null, $statusData = [], $save = true, $params = [])
+    {
+        if (is_null($statusCode)) {
+            $statusCode = $this->fsm->getRootState();
+            $prevStatusCode = null;
+        } else {
+            $prevStatusCode = $this->{$this->getStatusFieldname()};
+            if (is_null($prevStatusCode)) {
+                throw new \Exception("Stato attuale ordine non impostato");
+            }
+        }
+        if (!$this->fsm->checkTransition($prevStatusCode, $statusCode)) {
+            $msg = "FSM error::: State transition from " . $prevStatusCode . " to " . $statusCode . " not allowed";
+            Log::info($msg);
+            throw new \Exception($msg);
+        }
+
+        $methodName = 'checkTransitionFrom' . Str::studly($prevStatusCode) . 'To' . Str::studly($statusCode);
+        if (method_exists($this, $methodName) && !$this->$methodName($statusData, $params)) {
+            $msg = "FSM error::: State transition from " . $prevStatusCode . " to " . $statusCode . " not allowed for this item";
+            Log::info($msg);
+            throw new \Exception($msg);
+        }
+
+        return $this->setStatus($prevStatusCode, $statusCode, $statusData, $save, $params);
     }
 
-    /**
-     * controlla che il passaggio di stato sia lecito.
-     * @param string $startCode
-     * @param string $endCode
-     * @return bool
-     */
-    public function checkTransition($startCode, $endCode) {
-        return $this->fsm->checkTransition($startCode, $endCode);
+    public function makeTransitionAndSave($statusCode = null, $statusData = [], $params = [])
+    {
+        return $this->makeTransition($statusCode, $statusData, true, $params);
     }
 
-    public function getFSMStateDescription($stateCode) {
-        return $this->fsm->getStateDescription($stateCode);
-    }
+    protected function setStatus($prevStatusCode, $statusCode, $statusData = [], $save = false, $params = [])
+    {
 
-    public function isFinalCode($stateCode) {
-        return $this->fsm->isFinalCode($stateCode);
-    }
+        //Set the new status in the field
+        $this->{$this->getStatusFieldname()} = $statusCode;
 
-    public function getFSMPreviousStatesFromCode(string $code) {
-        return $this->fsm->getPreviousStatesFromCode($code);
-    }
+        //Perform additional operations if needed using a method
+        // setStatus<StudlyCode>($prevStatusCode,$statusData,$params)"
+        $methodName = 'setStatus' . Str::studly($statusCode);
+        if (method_exists($this, $methodName)) {
+            $this->$methodName($prevStatusCode, $statusData, $params);
+        }
 
-    public function getFSMPreviousStatesFromCodes(array $codes) {
-        return $this->fsm->getPreviousStatesFromCodes($codes);
-    }
+        //Update history
+        $this->updateStatusHistory($statusCode, $statusData, $prevStatusCode, $params);
 
-    /**
-     * Trova un path dallos tato scelto allo stato root;
-     * @param string $code
-     * @return array
-     */
-    public function getFSMReversePath($code) {
-        return $this->fsm->getReversePath($code);
+        if ($save) {
+            $this->save();
+        }
+
+        $this->fireMakeTransitionEvent($prevStatusCode, $statusCode, $statusData, $save, $params);
+
+        $this->logStatus($prevStatusCode, $statusCode, $statusData, $save, $params);
+
+        return $this;
     }
 
 
+    protected function updateStatusHistory($statusCode, $statusData, $prevStatusCode = null, $params = [])
+    {
+        $statusHistoryFieldname = $this->getStatusHistoryFieldname();
+        $states = $this->$statusHistoryFieldname;
+        if (is_null($states)) {
+            $states = [];
+        }
+        $statusInfo = [
+            'timestamp' => Carbon::now()->toDateTimeString(),
+            'status_code' => $statusCode,
+            'info' => $statusData
+        ];
+//        Log::info("STATI: " . print_r($states, true));
+        array_unshift($states, $statusInfo);
+//        Log::info("STATI NEW: " . print_r($states, true));
+        $this->$statusHistoryFieldname = $states;
 
+    }
+
+    protected function fireMakeTransitionEvent($prevStatusCode, $statusCode, $statusData, $saved, $params)
+    {
+        event(new StatusTransitionDone($this,$prevStatusCode, $statusCode, $statusData, $saved, $params));
+    }
+
+    protected function logStatus($prevStatusCode, $statusCode, $statusData, $saved, $params = [])
+    {
+    }
 
 
 }

@@ -20,7 +20,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Gecche\\FSM\\FSMServiceProvider"
+                "Gecche\\FSM\\Providers\\FSMServiceProvider"
             ],
             "aliases": {
                 "FSM": "Gecche\\FSM\\Facades\\FSM"

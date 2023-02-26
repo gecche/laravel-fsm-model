@@ -54,9 +54,14 @@ return [
         //modelclass => fsmtype
     ],
 
+    'listener' => "\\App\\Listeners\\HandleStatusTransition",
+
+    'models_listeners' => [
+        //modelclass => listenerclass
+    ],
+
     'types' => [
-        '<type>' =>
-        [
+        'typename' => [
 
             'groups' => [
                 /*
