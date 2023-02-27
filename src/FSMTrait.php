@@ -5,6 +5,7 @@ use Gecche\FSM\Events\StatusTransitionDone;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Gecche\FSM\Facades\FSM;
 
