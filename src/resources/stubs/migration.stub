@@ -16,7 +16,7 @@ return new class extends Migration {
 		Schema::table('{{migrationTable}}', function(Blueprint $table)
 		{
             $table->string('{{statusFieldname}}')->nullable()->default(null);
-            $table->longText('{{statusHistoryFieldname}}')->default("[]");
+            $table->longText('{{statusHistoryFieldname}}')->nullable();
 		});
 	}
 
