@@ -45,7 +45,8 @@ class FSMManager
         if (!$fsm || !is_array($fsm)) {
             throw new \Exception("Fsm configuration not found");
         }
-        return new FSM($fsm);
+        $fsmClass = Arr::get($fsmType,'fsm',FSM::class);
+        return new $fsmClass($fsm);
     }
 
 

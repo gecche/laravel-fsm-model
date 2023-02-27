@@ -63,6 +63,9 @@ return [
     'types' => [
         'typename' => [
 
+            'fsm' => null,//optional classname of the FSM, must implement Gecche\FSM\Contracts\FSMInterface
+                         // default Gecche\FSM\FSM
+
             'groups' => [
                 /*
                     groupcode => description|null
