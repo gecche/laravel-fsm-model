@@ -18,7 +18,7 @@ class StatusTransitionDone
     public $saved;
     public $params;
 
-    public function __construct(Model $model, string $prevStatusCode, string $statusCode, array $statusData, bool $saved, array $params)
+    public function __construct(Model $model, string|null $prevStatusCode, string|null $statusCode, array $statusData = [], bool $saved = true, array $params = [])
     {
         $this->model = $model;
         $this->prevStatusCode = $prevStatusCode;

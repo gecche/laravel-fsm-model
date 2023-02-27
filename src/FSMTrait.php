@@ -6,20 +6,18 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Gecche\FSM\Facades\FSM;
 
 trait FSMTrait
 {
 
-    public FSMInterface $fsm;
+    public $fsm;
 
-    public static function bootSearchableTrait()
+
+    public function initializeFSMTrait()
     {
-        static::created(function ($item) {
 
-            $item->fsm = FSM::getFSM($item);
-            // Index the item
-
-        });
+        $this->fsm = FSM::getFSM($this);
 
     }
 
@@ -51,13 +49,14 @@ trait FSMTrait
 
     public function makeTransition($statusCode = null, $statusData = [], $save = true, $params = [])
     {
+        $rootState = $this->fsm->getRootState();
         if (is_null($statusCode)) {
-            $statusCode = $this->fsm->getRootState();
+            $statusCode = $rootState;
             $prevStatusCode = null;
         } else {
             $prevStatusCode = $this->{$this->getStatusFieldname()};
-            if (is_null($prevStatusCode)) {
-                throw new \Exception("Stato attuale ordine non impostato");
+            if (is_null($prevStatusCode) && ($statusCode !== $rootState)) {
+                throw new \Exception("Previous status code not available");
             }
         }
         if (!$this->fsm->checkTransition($prevStatusCode, $statusCode)) {
@@ -108,12 +107,10 @@ trait FSMTrait
         $this->updateStatusHistory($statusCode, $statusData, $prevStatusCode, $params);
 
         if ($save) {
-            $this->save(Arr::get($params,'saveOptions',[]));
+            $this->save();
         }
 
-        if (Arr::get($params,'fireEvent',true)) {
-            $this->fireMakeTransitionEvent($prevStatusCode, $statusCode, $statusData, $save, $params);
-        }
+        $this->fireMakeTransitionEvent($prevStatusCode, $statusCode, $statusData, $save, $params);
 
         $this->logStatus($prevStatusCode, $statusCode, $statusData, $save, $params);
 

@@ -114,14 +114,19 @@ class FSM implements FSMInterface
     }
     /**
      * controlla che il passaggio di stato sia lecito.
-     * @param string $startCode
+     * @param string|null $startCode
      * @param string $endCode
      * @return bool
      */
     public function checkTransition($startCode, $endCode)
     {
         if ($endCode === $this->getRootState()) {
-            return false;
+            if (is_null($startCode)) {
+                return true;
+            }
+            if ($startCode !== $endCode) {
+                return false;
+            }
         }
         return in_array($endCode,$this->getNextStatesFromCode($startCode));
     }
