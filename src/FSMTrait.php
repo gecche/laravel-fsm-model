@@ -108,10 +108,12 @@ trait FSMTrait
         $this->updateStatusHistory($statusCode, $statusData, $prevStatusCode, $params);
 
         if ($save) {
-            $this->save();
+            $this->save(Arr::get($params,'saveOptions',[]));
         }
 
-        $this->fireMakeTransitionEvent($prevStatusCode, $statusCode, $statusData, $save, $params);
+        if (Arr::get($params,'fireEvent',true)) {
+            $this->fireMakeTransitionEvent($prevStatusCode, $statusCode, $statusData, $save, $params);
+        }
 
         $this->logStatus($prevStatusCode, $statusCode, $statusData, $save, $params);
 
