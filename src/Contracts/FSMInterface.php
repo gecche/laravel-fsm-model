@@ -53,6 +53,9 @@ interface FSMInterface
 
     public function getPreviousStatesFromCodes(array $codes);
 
+    public function isInGroup($code,$group);
+
+    public function getAllCodesInGroup($group);
     /**
      * Trova un path dallos tato scelto allo stato root;
      * @param string $code

@@ -30,6 +30,16 @@ class FSM implements FSMInterface
         foreach ($this->config['final_states_codes'] as $stateCode) {
             $this->config['previous_states_codes'][$stateCode] = [];
         }
+
+        $this->config['group_codes'] = array_fill_keys(array_keys($this->config['groups']), []);
+        foreach ($this->config['states'] as $code => $state) {
+            foreach (Arr::get($state, 'groups', []) as $group) {
+                if (in_array($group, $this->config['groups'])) {
+                    $this->config['group_codes'][$group][$code] = $code;
+                }
+            }
+        }
+
         $this->setPreviousStates(Arr::get($this->config, 'root'));
     }
 
@@ -58,8 +68,8 @@ class FSM implements FSMInterface
      */
     public function getStateInfo(string $stateCode, $info = null)
     {
-        $fullStateInfo = Arr::get($this->config['states'],$stateCode,[]);
-        return is_null($info) ? $fullStateInfo : Arr::get($fullStateInfo,$info);
+        $fullStateInfo = Arr::get($this->config['states'], $stateCode, []);
+        return is_null($info) ? $fullStateInfo : Arr::get($fullStateInfo, $info);
 
     }
 
@@ -77,7 +87,7 @@ class FSM implements FSMInterface
      */
     protected function getTransitions()
     {
-        return Arr::get($this->config,'transitions',[]);
+        return Arr::get($this->config, 'transitions', []);
     }
 
 
@@ -89,7 +99,7 @@ class FSM implements FSMInterface
     public function getNextStatesFromCode(string $code)
     {
         $transitions = $this->getTransitions();
-        return Arr::get($transitions,$code,[]);
+        return Arr::get($transitions, $code, []);
     }
 
     /**
@@ -110,8 +120,9 @@ class FSM implements FSMInterface
 
     public function getRootState()
     {
-        return Arr::get($this->config,'root');
+        return Arr::get($this->config, 'root');
     }
+
     /**
      * controlla che il passaggio di stato sia lecito.
      * @param string|null $startCode
@@ -128,12 +139,12 @@ class FSM implements FSMInterface
                 return false;
             }
         }
-        return in_array($endCode,$this->getNextStatesFromCode($startCode));
+        return in_array($endCode, $this->getNextStatesFromCode($startCode));
     }
 
     public function getStateDescription($stateCode)
     {
-        return $this->getStateInfo($stateCode,'description');
+        return $this->getStateInfo($stateCode, 'description');
     }
 
     public function isFinalCode($stateCode)
@@ -144,7 +155,7 @@ class FSM implements FSMInterface
 
     public function getPreviousStatesFromCode(string $code)
     {
-        return Arr::get($this->config['previous_states_codes'],$code,[]);
+        return Arr::get($this->config['previous_states_codes'], $code, []);
     }
 
     public function getPreviousStatesFromCodes(array $codes)
@@ -223,6 +234,14 @@ class FSM implements FSMInterface
         }
 
 
+    }
+
+    public function isInGroup($code,$group) {
+        return array_key_exists($code,$this->getAllCodesInGroup($group));
+    }
+
+    public function getAllCodesInGroup($group) {
+        return Arr::get($this->config['groups_codes'],$group,[]);
     }
 
 
