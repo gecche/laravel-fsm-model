@@ -18,6 +18,10 @@ class FSM implements FSMInterface
         $this->init();
     }
 
+    public function getConfig() {
+        return $this->config;
+    }
+
     protected function init()
     {
 
@@ -31,10 +35,11 @@ class FSM implements FSMInterface
             $this->config['previous_states_codes'][$stateCode] = [];
         }
 
-        $this->config['group_codes'] = array_fill_keys(array_keys($this->config['groups']), []);
+        $groupsIds = array_keys(Arr::get($this->config,'groups',[]));
+        $this->config['group_codes'] = array_fill_keys($groupsIds, []);
         foreach ($this->config['states'] as $code => $state) {
             foreach (Arr::get($state, 'groups', []) as $group) {
-                if (in_array($group, $this->config['groups'])) {
+                if (in_array($group, $groupsIds)) {
                     $this->config['group_codes'][$group][$code] = $code;
                 }
             }
@@ -241,7 +246,7 @@ class FSM implements FSMInterface
     }
 
     public function getAllCodesInGroup($group) {
-        return Arr::get($this->config['groups_codes'],$group,[]);
+        return Arr::get($this->config['group_codes'],$group,[]);
     }
 
 
