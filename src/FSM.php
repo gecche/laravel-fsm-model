@@ -51,7 +51,9 @@ class FSM implements FSMInterface
         $nextStateCodes = Arr::get(Arr::get($this->config, 'transitions', []), $stateCode, []);
         foreach ($nextStateCodes as $nextStateCode) {
             $this->config['previous_states_codes'][$nextStateCode][$stateCode] = $stateCode;
-            static::setPreviousStates($nextStateCode);
+            if ($nextStateCode != $stateCode) {
+                static::setPreviousStates($nextStateCode);
+            }
         }
     }
 
