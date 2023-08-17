@@ -56,7 +56,7 @@ class FSM implements FSMInterface
         $nextStateCodes = Arr::get(Arr::get($this->config, 'transitions', []), $stateCode, []);
         foreach ($nextStateCodes as $nextStateCode) {
             $this->config['previous_states_codes'][$nextStateCode][$stateCode] = $stateCode;
-            if ($nextStateCode != $stateCode) {
+            if ($nextStateCode != $stateCode && !array_key_exists($stateCode,$this->config['previous_states_codes'][$nextStateCode])) {
                 static::setPreviousStates($nextStateCode);
             }
         }
@@ -175,24 +175,21 @@ class FSM implements FSMInterface
         return $stateCodes;
     }
 
-//
-//    public function getStatiSelect($all = false, $none = false)
-//    {
-//        if ($all) {
-//            $states_select_ante = array('all' => 'Qualsiasi stato');
-//        } elseif ($none) {
-//            $states_select_ante = array('none' => 'Nessuno stato');
-//        } else {
-//            $states_select_ante = array();
-//        }
-//
-//        foreach ($this->states_id as $stato_codice => $stato_id) {
-//            $states_select[$stato_id] = $stato_codice . ' - ' . $this->states[$stato_codice]['nome'];
-//        }
-//
-//        $states_select = array_merge($states_select_ante, $states_select);
-//        return $states_select;
-//    }
+
+    public function getStatesForSelectList()
+    {
+        $list = [];
+
+        $states = $this->getStates();
+
+        $infoForSelectList = Arr::get($this->config,'info_for_select_list','description');
+
+        foreach ($states as $stateKey => $stateInfo) {
+            $list[$stateKey] = Arr::get($stateInfo,$infoForSelectList,$stateKey);
+        }
+
+        return $list;
+    }
 
 
     /**
