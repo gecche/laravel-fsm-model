@@ -128,16 +128,20 @@ trait FSMTrait
         if (is_null($states)) {
             $states = [];
         }
-        $statusInfo = [
-            'timestamp' => Carbon::now()->toDateTimeString(),
-            'status_code' => $statusCode,
-            'info' => $statusData
-        ];
+        $statusInfo = $this->buildStatusInfo($statusCode, $statusData, $prevStatusCode, $params);
 //        Log::info("STATI: " . print_r($states, true));
         array_unshift($states, $statusInfo);
 //        Log::info("STATI NEW: " . print_r($states, true));
         $this->$statusHistoryFieldname = $states;
 
+    }
+
+    protected function buildStatusInfo($statusCode, $statusData, $prevStatusCode, $params) {
+        return [
+            'timestamp' => Carbon::now()->toDateTimeString(),
+            'status_code' => $statusCode,
+            'info' => $statusData
+        ];
     }
 
     protected function fireMakeTransitionEvent($prevStatusCode, $statusCode, $statusData, $saved, $params)
@@ -149,5 +153,15 @@ trait FSMTrait
     {
     }
 
+    public function getStatusHistory() {
+        $statusHistoryName = $this->getStatusHistoryFieldname();
+        return $this->$statusHistoryName;
+    }
+    public function getLastStatus() {
+
+        $statusHistory = $this->getStatusHistory();
+        return Arr::get($statusHistory,0,[]);
+        
+    }
 
 }
