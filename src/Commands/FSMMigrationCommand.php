@@ -5,6 +5,7 @@ namespace Gecche\FSM\Commands;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class CompileRelationsCommand
@@ -98,7 +99,7 @@ class FSMMigrationCommand extends Command
      */
     public function stubPath()
     {
-        return Config::get('fsm.stub-path') ?: __DIR__ . '/stubs';
+        return Config::get('fsm.stub-path') ?: __DIR__ . '/../resources/stubs';
     }
 
 
