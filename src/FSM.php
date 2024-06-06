@@ -1,5 +1,6 @@
 <?php namespace Gecche\FSM;
 
+use Gecche\FSM\Contracts\FSMConfigInterface;
 use Gecche\FSM\Contracts\FSMInterface;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
@@ -25,6 +26,14 @@ class FSM implements FSMInterface
     protected function init()
     {
 
+        $configClass = Arr::get($this->config,'fsmConfigClass');
+        if ($configClass) {
+            if (!class_implements($configClass,FSMConfigInterface::class)) {
+                throw new \Exception("FSM Config class must implement FSMConfigInterface");
+            }
+            $this->initFromConfigClass($configClass);
+        }
+
         $this->config['states_codes'] = array_keys(Arr::get($this->config, 'states', []));
         $this->config['final_states_codes'] = array_keys(array_filter(Arr::get($this->config, 'states', []), function ($item) {
             return Arr::get($item, 'final', false);
@@ -47,6 +56,17 @@ class FSM implements FSMInterface
 
         $this->setPreviousStates(Arr::get($this->config, 'root'));
     }
+
+    protected function initFromConfigClass($configClass)
+    {
+
+        $this->config['states'] = $configClass::states();
+        $this->config['groups'] = $configClass::groups();
+        $this->config['root'] = $configClass::root();
+        $this->config['transitions'] = $configClass::transitions();
+
+    }
+
 
     protected function setPreviousStates($stateCode)
     {

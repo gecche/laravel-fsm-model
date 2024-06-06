@@ -62,8 +62,8 @@ class FSMMigrationCommand extends Command
         $migrationTable = $model->getTable();
         $stringsToReplace = [
             '{{migrationTable}}' => $migrationTable,
-            '{{statusFieldname}}' => $this->getOption('status'),
-            '{{statusHistoryFieldname}}' => $this->getOption('history'),
+            '{{statusFieldname}}' => $this->option('status'),
+            '{{statusHistoryFieldname}}' => $this->option('history'),
         ];
 
         /*

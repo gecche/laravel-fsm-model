@@ -2,8 +2,6 @@
 
 namespace Gecche\FSM\Contracts;
 
-use Gecche\FSM\unknown_type;
-
 interface FSMInterface
 {
     /**
