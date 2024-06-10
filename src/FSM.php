@@ -93,7 +93,7 @@ class FSM implements FSMInterface
     /**
      * @return array
      */
-    public function getStateInfo(string $stateCode, $info = null)
+    public function getStateInfo(string $stateCode, $info = null, $default = null)
     {
         $fullStateInfo = Arr::get($this->config['states'], $stateCode, []);
         return is_null($info) ? $fullStateInfo : Arr::get($fullStateInfo, $info);
@@ -171,7 +171,7 @@ class FSM implements FSMInterface
 
     public function getStateDescription($stateCode)
     {
-        return $this->getStateInfo($stateCode, 'description');
+        return $this->getStateInfo($stateCode, 'description', Str::title($stateCode));
     }
 
     public function isFinalCode($stateCode)
@@ -205,7 +205,7 @@ class FSM implements FSMInterface
         $infoForSelectList = Arr::get($this->config,'info_for_select_list','description');
 
         foreach ($states as $stateKey => $stateInfo) {
-            $list[$stateKey] = Arr::get($stateInfo,$infoForSelectList,$stateKey);
+            $list[$stateKey] = Arr::get($stateInfo,$infoForSelectList,Str::title($stateKey));
         }
 
         return $list;
