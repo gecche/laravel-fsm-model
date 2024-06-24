@@ -96,7 +96,7 @@ class FSM implements FSMInterface
     public function getStateInfo(string $stateCode, $info = null, $default = null)
     {
         $fullStateInfo = Arr::get($this->config['states'], $stateCode, []);
-        return is_null($info) ? $fullStateInfo : Arr::get($fullStateInfo, $info);
+        return is_null($info) ? $fullStateInfo : Arr::get($fullStateInfo, $info, $default);
 
     }
 
@@ -171,7 +171,8 @@ class FSM implements FSMInterface
 
     public function getStateDescription($stateCode)
     {
-        return $this->getStateInfo($stateCode, 'description', Str::title($stateCode));
+        return $this->getStateInfo($stateCode, 'description',
+            Str::title(Str::replace(['_','-'],[" "," "],$stateCode)));
     }
 
     public function isFinalCode($stateCode)
@@ -268,5 +269,26 @@ class FSM implements FSMInterface
         return Arr::get($this->config['group_codes'],$group,[]);
     }
 
+    public function getStateGroups() {
+        return in_array($this->getStateInfo($stateCode, 'groups', []));
+    }
 
+    public function hasGroup($code,$group) {
+
+        return array_key_exists($code,$this->getAllCodesInGroup($group));
+    }
+
+    public function __call($method, $parameters)
+    {
+        if (Str::startsWith($method, 'getState')) {
+            $field = Str::snake(Str::after($method,'getState'));
+            if ($field) {
+                $stateCode = array_shift($parameters);
+                return $this->getStateInfo($stateCode,$field,...$parameters);
+
+            }
+        }
+
+        throw new \BadMethodCallException("Method [$method] does not exist.");
+    }
 }
