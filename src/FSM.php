@@ -269,8 +269,8 @@ class FSM implements FSMInterface
         return Arr::get($this->config['group_codes'],$group,[]);
     }
 
-    public function getStateGroups() {
-        return in_array($this->getStateInfo($stateCode, 'groups', []));
+    public function getStateGroups($stateCode) {
+        return $this->getStateInfo($stateCode, 'groups', []);
     }
 
     public function hasGroup($code,$group) {
