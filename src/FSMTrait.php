@@ -130,7 +130,7 @@ trait FSMTrait
         }
         $statusInfo = $this->buildStatusInfo($statusCode, $statusData, $prevStatusCode, $params);
 //        Log::info("STATI: " . print_r($states, true));
-        array_unshift($states, $statusInfo);
+        $states[] = $statusInfo;
 //        Log::info("STATI NEW: " . print_r($states, true));
         $this->$statusHistoryFieldname = $states;
 
@@ -140,7 +140,8 @@ trait FSMTrait
         return [
             'timestamp' => Carbon::now()->toDateTimeString(),
             'status_code' => $statusCode,
-            'info' => $statusData
+            'info' => $statusData,
+            'position' => $this->getLastStatusKey() + 1,
         ];
     }
 
@@ -157,11 +158,47 @@ trait FSMTrait
         $statusHistoryName = $this->getStatusHistoryFieldname();
         return $this->$statusHistoryName;
     }
-    public function getLastStatus() {
+    public function getLastStatus()
+    {
 
         $statusHistory = $this->getStatusHistory();
-        return Arr::get($statusHistory,0,[]);
-        
+        return Arr::last($statusHistory, null, []);
+
+    }
+
+    public function getLastStatusKey()
+    {
+
+        $statusHistory = $this->getStatusHistory();
+        if (!$statusHistory) {
+            return -1;
+        }
+        return array_key_last($statusHistory);
+
+    }
+
+    public function hasBeenInStatus($statusCode)
+    {
+        $history = $this->getStatusHistory();
+        $passedStates = Arr::pluck($history, 'status_code', 'position');
+        return in_array($statusCode, $passedStates);
+    }
+
+    public function isCurrentlyInGroup($group)
+    {
+        return $this->fsm->isInGroup($this->status,$group);
+    }
+
+    public function getLastStatusDescription() {
+        return $this->fsm->getStateDescription($this->status);
+    }
+
+    public function scopeIsInStateGroup($query, $group) {
+        return $query->whereIn($this->getStatusFieldname(),$this->getFSM()->getAllCodesInGroup($group));
+    }
+
+    public function scopeIsNotInStateGroup($query, $group) {
+        return $query->whereNotIn($this->getStatusFieldname(),$this->getFSM()->getAllCodesInGroup($group));
     }
 
 }
